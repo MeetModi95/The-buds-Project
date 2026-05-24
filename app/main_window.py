@@ -83,7 +83,14 @@ class MainWindow(ctk.CTk):
 
         # --- Profile State ---
         _base = _get_base_path()
-        self._profiles_dir = os.path.join(_base, "data", "profiles")
+
+        # When frozen, save profiles next to executable to ensure persistence.
+        # In development, save to the project root.
+        if getattr(sys, 'frozen', False):
+            self._profiles_dir = os.path.join(os.path.dirname(sys.executable), "data", "profiles")
+        else:
+            self._profiles_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "profiles")
+
         self._default_profile_path = os.path.join(_base, "data", "default_profile.json")
         self._active_profile_name = "Default"
         self._engine_active = False

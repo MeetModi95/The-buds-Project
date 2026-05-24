@@ -122,8 +122,11 @@ class SettingsPage(ctk.CTkFrame):
                                                 font=ctk.CTkFont(family=Fonts.FAMILY, size=Fonts.BODY_SIZE))
         # Resolve the default model path (works in both source and frozen mode)
         import sys as _sys
-        if getattr(_sys, 'frozen', False) and hasattr(_sys, '_MEIPASS'):
-            _default_model = os.path.join(_sys._MEIPASS, "model")
+        if getattr(_sys, 'frozen', False):
+            _default_model = os.path.join(os.path.dirname(_sys.executable), "model")
+            # Fallback to temp dir if adjacent doesn't exist
+            if not os.path.exists(_default_model) and hasattr(_sys, '_MEIPASS'):
+                _default_model = os.path.join(_sys._MEIPASS, "model")
         else:
             _default_model = os.path.abspath("model")
         self._model_path_entry.insert(0, _default_model)
