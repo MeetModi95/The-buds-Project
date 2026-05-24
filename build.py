@@ -57,13 +57,15 @@ def build():
     # Collect data directories
     data_dirs = []
 
-    # Vosk model
+    # Vosk model - do not bundle internally to keep EXE size small and startup instantaneous.
+    # Instead, we will copy it next to the compiled EXE in dist/
     model_dir = os.path.join(project_root, "model")
+    copy_model_externally = False
     if os.path.isdir(model_dir):
-        data_dirs.append((model_dir, "model"))
-        print("[OK] Bundling model directory (%s)" % model_dir)
+        copy_model_externally = True
+        print("[OK] Will copy model folder to dist/ output directory for zero-decompression fast startup.")
     else:
-        print("[WARN] 'model/' directory not found - the EXE will need it at runtime.")
+        print("[WARN] 'model/' directory not found - you must place it adjacent to the EXE at runtime.")
 
     # Data (profiles, defaults)
     data_dir = os.path.join(project_root, "data")
@@ -75,11 +77,23 @@ def build():
     data_dirs.append((ctk_path, "customtkinter"))
     print("[OK] Bundling customtkinter assets (%s)" % ctk_path)
 
+    # Bundle the logo image inside the executable
+    logo_file = os.path.join(project_root, "sonic logo.png")
+    if os.path.isfile(logo_file):
+        data_dirs.append((logo_file, "."))
+        print("[OK] Bundling sonic logo.png")
+
     # Build the --add-data arguments
     separator = ";" if sys.platform == "win32" else ":"
     add_data_args = []
     for src, dest in data_dirs:
         add_data_args.extend(["--add-data", "%s%s%s" % (src, separator, dest)])
+
+    exclude_modules = [
+        "matplotlib", "scipy", "pandas", "IPython", "ipykernel", "notebook",
+        "PyQt5", "PyQt6", "PySide2", "PySide6", "sqlite3", "tkinter.test",
+        "unittest", "pydoc"
+    ]
 
     # PyInstaller command
     cmd = [
@@ -88,6 +102,7 @@ def build():
         "--windowed",
         "--name", "SonicVoiceStudio",
         "--clean",
+        "--noupx",  # Decompressing at startup adds latency; disable UPX for instant launches
         # Collect all binaries and data for specific packages
         "--collect-all", "vosk",
         "--hidden-import", "sounddevice",
@@ -99,9 +114,15 @@ def build():
         "--hidden-import", "customtkinter",
         "--hidden-import", "numpy",
         "--hidden-import", "PIL",
-        *add_data_args,
-        entry_point,
     ]
+
+    # Add exclusions
+    for mod in exclude_modules:
+        cmd.extend(["--exclude-module", mod])
+
+    # Add data files
+    cmd.extend(add_data_args)
+    cmd.append(entry_point)
 
     print()
     print("=" * 60)
@@ -116,6 +137,27 @@ def build():
 
     if result.returncode == 0:
         exe_path = os.path.join(project_root, "dist", "SonicVoiceStudio.exe")
+        dist_dir = os.path.join(project_root, "dist")
+        
+        # Copy model folder externally to dist/model/
+        if copy_model_externally:
+            dest_model_dir = os.path.join(dist_dir, "model")
+            print("[..] Copying 'model/' folder to dist/model/ ...")
+            try:
+                if os.path.exists(dest_model_dir):
+                    shutil.rmtree(dest_model_dir)
+                shutil.copytree(model_dir, dest_model_dir)
+                print("[OK] 'model/' folder copied adjacent to executable.")
+            except Exception as e:
+                print("[WARN] Failed to copy model folder: %s" % e)
+
+        # Copy logo adjacent as reference
+        if os.path.isfile(logo_file):
+            try:
+                shutil.copy2(logo_file, os.path.join(dist_dir, "sonic logo.png"))
+            except Exception:
+                pass
+
         print()
         print("=" * 60)
         print("  BUILD SUCCESSFUL")

@@ -45,6 +45,28 @@ class MainWindow(ctk.CTk):
         self.minsize(Sizes.WINDOW_MIN_WIDTH, Sizes.WINDOW_MIN_HEIGHT)
         self.configure(fg_color=Colors.BG_ROOT)
 
+        # --- Taskbar Icon / App ID for Windows ---
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                myappid = "soniclabs.sonicvoicestudio.ii.2.0"
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            except Exception:
+                pass
+
+        # --- Window Icon ---
+        logo_path = os.path.join(_get_base_path(), "sonic logo.png")
+        if not os.path.exists(logo_path) and getattr(sys, 'frozen', False):
+            logo_path = os.path.join(os.path.dirname(sys.executable), "sonic logo.png")
+        if os.path.exists(logo_path):
+            try:
+                from PIL import Image, ImageTk
+                img = Image.open(logo_path)
+                photo = ImageTk.PhotoImage(img)
+                self.wm_iconphoto(True, photo)
+            except Exception as e:
+                print("Failed to set window icon:", e)
+
         # --- Appearance ---
         ctk.set_appearance_mode("Dark")
         ctk.set_default_color_theme("dark-blue")
@@ -143,7 +165,16 @@ class MainWindow(ctk.CTk):
 
     def _load_voice_model(self):
         """Load the Vosk model."""
-        model_path = os.path.join(_get_base_path(), "model")
+        # Check adjacent to executable first
+        if getattr(sys, 'frozen', False):
+            model_path = os.path.join(os.path.dirname(sys.executable), "model")
+        else:
+            model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "model")
+
+        # Fallback to bundled data directory
+        if not os.path.exists(model_path):
+            model_path = os.path.join(_get_base_path(), "model")
+
         # Check if settings page has a custom path
         if "settings" in self._pages:
             try:

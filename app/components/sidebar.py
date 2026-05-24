@@ -4,6 +4,8 @@ Razer Synapse–inspired sidebar with icon labels, active state indicator,
 hover effects, and engine status toggle at the bottom.
 """
 
+import os
+import sys
 import customtkinter as ctk
 from app.theme import Colors, Fonts, Sizes
 
@@ -93,10 +95,33 @@ class Sidebar(ctk.CTkFrame):
         brand_frame.pack(fill="x", side="top")
         brand_frame.pack_propagate(False)
 
+        # Resolve logo path
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+        logo_path = os.path.join(base_path, "sonic logo.png")
+        if not os.path.exists(logo_path) and getattr(sys, 'frozen', False):
+            logo_path = os.path.join(os.path.dirname(sys.executable), "sonic logo.png")
+
+        logo_loaded = False
+        if os.path.exists(logo_path):
+            try:
+                from PIL import Image
+                pil_img = Image.open(logo_path)
+                logo_image = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(32, 32))
+                self._logo_label = ctk.CTkLabel(brand_frame, image=logo_image, text="")
+                self._logo_label.pack(side="left", padx=(15, 6), pady=(20, 10))
+                logo_loaded = True
+            except Exception as e:
+                print("Failed to load sidebar logo:", e)
+
+        brand_title_padx = 5 if logo_loaded else 20
         brand_title = ctk.CTkLabel(brand_frame, text="SONIC",
                                     font=ctk.CTkFont(family=Fonts.FAMILY, size=22, weight="bold"),
                                     text_color=Colors.ACCENT_GLOW)
-        brand_title.pack(side="left", padx=(20, 2), pady=(20, 10))
+        brand_title.pack(side="left", padx=(brand_title_padx, 2), pady=(20, 10))
 
         brand_sub = ctk.CTkLabel(brand_frame, text="VOICE",
                                   font=ctk.CTkFont(family=Fonts.FAMILY, size=22, weight="bold"),
