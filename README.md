@@ -21,7 +21,7 @@ Sonic Voice Studio II is a production-grade, offline voice command control softw
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/sonic-voice-studio.git
+   git clone https://https://github.com/MeetModi95/The-buds-Project
    cd sonic-voice-studio
    ```
 
