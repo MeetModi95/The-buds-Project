@@ -1,0 +1,71 @@
+{
+    "name": "Default",
+    "commands": [
+        {
+            "phrase": "play music",
+            "action_type": "media_key",
+            "action_value": "media_play_pause",
+            "enabled": true
+        },
+        {
+            "phrase": "stop music",
+            "action_type": "media_key",
+            "action_value": "media_play_pause",
+            "enabled": true
+        },
+        {
+            "phrase": "next song",
+            "action_type": "media_key",
+            "action_value": "media_next",
+            "enabled": true
+        },
+        {
+            "phrase": "previous song",
+            "action_type": "media_key",
+            "action_value": "media_previous",
+            "enabled": true
+        },
+        {
+            "phrase": "volume up",
+            "action_type": "media_key",
+            "action_value": "media_volume_up",
+            "enabled": true
+        },
+        {
+            "phrase": "volume down",
+            "action_type": "media_key",
+            "action_value": "media_volume_down",
+            "enabled": true
+        },
+        {
+            "phrase": "open chrome",
+            "action_type": "open_app",
+            "action_value": "chrome",
+            "enabled": true
+        },
+        {
+            "phrase": "open gravity",
+            "action_type": "open_app",
+            "action_value": "C:/Users/Meet Modi/Desktop/Gravity.lnk",
+            "enabled": true
+        },
+        {
+            "phrase": "open youtube",
+            "action_type": "open_url",
+            "action_value": "https://www.youtube.com/",
+            "enabled": true
+        },
+        {
+            "phrase": "open gemini",
+            "action_type": "open_app",
+            "action_value": "C:/Users/Meet Modi/Desktop/Google Gemini.lnk",
+            "enabled": true
+        }
+    ],
+    "audio": {
+        "gate_level": 0.8,
+        "confidence_threshold": 0.5,
+        "cooldown_seconds": 0.5,
+        "input_device": 0
+    }
+}
